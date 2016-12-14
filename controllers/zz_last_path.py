@@ -6,20 +6,10 @@
 # Web: http://www.yooliang.com/
 # Date: 2016/12/12.
 
-from argeweb import Controller, scaffold, route_menu, route_with, route
-from argeweb.components.pagination import Pagination
-from argeweb.components.search import Search
+from argeweb import Controller, route_menu, route_with, route
 
 
 class ZzLastPath(Controller):
-    class Meta:
-        components = (scaffold.Scaffolding, Pagination, Search)
-        pagination_actions = ("list",)
-        pagination_limit = 50
-
-    class Scaffold:
-        display_properties_in_list = ("name", "title_lang_zhtw", "date", "is_enable")
-
     @route_with(template="/<:(.*)>.html")
     def zz_full_path(self, path):
         """
