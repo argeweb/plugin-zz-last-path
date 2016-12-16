@@ -7,6 +7,6 @@
 # Date: 2016/12/12.
 
 plugins_helper = {
-    "title": u"最後路徑",
-    "desc": u"根據 routing 的規則，此模組的路徑將會在最後被載入"
+    'title': u'最後路徑',
+    'desc': u"根據 routing 的規則，此模組的路徑將會在最後被載入"
 }

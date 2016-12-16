@@ -18,7 +18,7 @@ class ZzLastPath(Controller):
         # 取消樣版系統的快取
         self.meta.view.cache = False
 
-        self.context["information"] = self.host_information
+        self.context['information'] = self.host_information
         # 先從 Datastore 讀取樣版, 再從 實體檔案 讀取樣版 (template, themes 相關目錄)
         self.meta.view.template_name = [
-            u"assets:/themes/%s/%s.html" % (self.theme, path), u"/" + path + u".html"]
+            u'assets:/themes/%s/%s.html' % (self.theme, path), u'/' + path + u'.html']
