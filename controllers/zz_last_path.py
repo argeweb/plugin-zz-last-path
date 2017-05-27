@@ -45,13 +45,6 @@ def check_authorizations(controller, path, host_information):
     return can_render, redirect_to
 
 
-def get_information(server_name, namespace, **kwargs):
-    namespace_manager.set_namespace('shared')
-    info = HostInformationModel.get_by_host(server_name)
-    namespace_manager.set_namespace(namespace)
-    return info
-
-
 class ZzLastPath(Controller):
     class Meta:
         components = (scaffold.Scaffolding, Pagination, Search, CSRF)
@@ -64,7 +57,7 @@ class ZzLastPath(Controller):
         self.meta.view.cache = False
         self.context['information'] = self.host_information
         try:
-            can_render, redirect_to = check_authorizations(self, '/index.html', get_information(self.server_name, self.namespace))
+            can_render, redirect_to = check_authorizations(self, '/index.html', self.host_information)
         except ImportError:
             can_render = True
             redirect_to = ''
@@ -106,7 +99,7 @@ class ZzLastPath(Controller):
         self.meta.view.cache = False
 
         self.context['information'] = self.host_information
-        can_render, redirect_to = check_authorizations(self, path, get_information(self.server_name, self.namespace))
+        can_render, redirect_to = check_authorizations(self, path, self.host_information)
         if can_render:
             # 先從 Datastore 讀取樣版, 再從 實體檔案 讀取樣版 (template, themes 相關目錄)
             self.meta.view.template_name = [
