@@ -4,12 +4,23 @@
 # Created with YooLiang Technology (侑良科技).
 # Author: Qi-Liang Wen (温啓良）
 # Web: http://www.yooliang.com/
-# Date: 2015/7/12.
+# Date: 2017/5/27.
 
-from argeweb import BasicModel
 from argeweb import Fields
-from google.appengine.ext import ndb
+from argeweb import BasicModel
 
 
 class ZzLastPathModel(BasicModel):
-    pass
+    name = Fields.HiddenProperty(verbose_name=u'識別名稱', default=u'zz_last_path_config')
+    authorization_check = Fields.CodeJSONProperty(verbose_name=u'驗証檢查', default=u'''
+        {
+            "anonymous": ["*"],
+            "user": [],
+            "member": []
+        }
+    ''')
+    authorization_redirect = Fields.CodeJSONProperty(verbose_name=u'驗証重新導向路徑', default=u'''
+        {
+            "user": "/login.html"
+        }
+    ''')

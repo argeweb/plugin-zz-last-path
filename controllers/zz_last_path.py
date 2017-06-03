@@ -12,7 +12,6 @@ from argeweb import Controller, scaffold, route_menu, Fields, route_with, route
 from argeweb.components.pagination import Pagination
 from argeweb.components.search import Search
 from argeweb.components.csrf import CSRF, csrf_protect
-from ..models.host_information_model import HostInformationModel
 
 
 def check_authorizations(controller, path, host_information):
@@ -56,8 +55,9 @@ class ZzLastPath(Controller):
         # 取消樣版系統的快取
         self.meta.view.cache = False
         self.context['information'] = self.host_information
+        zz_config = self.meta.Model.find_by_name('zz_last_path_config')
         try:
-            can_render, redirect_to = check_authorizations(self, '/index.html', self.host_information)
+            can_render, redirect_to = check_authorizations(self, '/index.html', zz_config)
         except ImportError:
             can_render = True
             redirect_to = ''
@@ -97,9 +97,13 @@ class ZzLastPath(Controller):
         path = '/%s.html' % path
         # 取消樣版系統的快取
         self.meta.view.cache = False
-
         self.context['information'] = self.host_information
-        can_render, redirect_to = check_authorizations(self, path, self.host_information)
+        zz_config = self.meta.Model.find_by_name('zz_last_path_config')
+        try:
+            can_render, redirect_to = check_authorizations(self, path, zz_config)
+        except ImportError:
+            can_render = True
+            redirect_to = ''
         if can_render:
             # 先從 Datastore 讀取樣版, 再從 實體檔案 讀取樣版 (template, themes 相關目錄)
             self.meta.view.template_name = [
@@ -109,3 +113,42 @@ class ZzLastPath(Controller):
                 return self.redirect(redirect_to)
             return self.abort(403)
 
+    def admin_list(self):
+        return scaffold.list(self)
+
+    def admin_add(self):
+        return scaffold.add(self)
+
+    @route
+    @route_menu(list_name=u'backend', text=u'頁面路徑驗証設定', sort=9952, group=u'系統設定', need_hr=True)
+    def admin_config(self):
+        record = self.meta.Model.find_by_name('zz_last_path_config')
+        if record is None:
+            record = self.meta.Model()
+            record.name = 'zz_last_path_config'
+            record.put()
+        return scaffold.edit(self, record.key)
+
+    def admin_edit(self, key):
+        self.context['item'] = self.params.get_ndb_record(key)
+        return scaffold.edit(self, key)
+
+    def admin_view(self, key):
+        self.context['item'] = self.params.get_ndb_record(key)
+        return scaffold.edit(self, key)
+
+    def admin_delete(self, key):
+        return scaffold.delete(self, key)
+
+    @route
+    def taskqueue_after_install(self):
+        try:
+            record = self.meta.Model.find_by_name('zz_last_path_config')
+            if record is None:
+                record = self.meta.Model()
+                record.name = 'zz_last_path_config'
+                record.put()
+            return 'done'
+        except ImportError:
+            self.logging.error(u'需要 "付款中間層"')
+            return 'ImportError'

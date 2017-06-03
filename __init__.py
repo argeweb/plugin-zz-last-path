@@ -7,8 +7,8 @@
 # Date: 2017/5/27.
 
 
-
 plugins_helper = {
     'title': u'Html 路徑映射',
-    'desc': u"根據 routing 的規則，此模組的路徑將會在最後被載入"
+    'desc': u"根據 routing 的規則，此模組的路徑將會在最後被載入",
+    'install_uri': 'zz_last_path:zz_last_path:after_install'
 }
