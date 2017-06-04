@@ -14,10 +14,10 @@ from argeweb.components.search import Search
 from argeweb.components.csrf import CSRF, csrf_protect
 
 
-def check_authorizations(controller, path, host_information):
+def check_authorizations(controller, path, config):
     redirect_to = ''
     can_render = False
-    check = host_information.authorization_check
+    check = config.authorization_check
     key_all = ''
     key_path = ''
     if check != '':
@@ -35,7 +35,7 @@ def check_authorizations(controller, path, host_information):
                 if can_render is False:
                     can_render = key_all is not '' and controller.application_user.has_role(key_all)
     if can_render is False:
-        redirect = host_information.authorization_redirect
+        redirect = config.authorization_redirect
         redirect = controller.util.parse_json(redirect)
         if key_path is not '' and key_path in redirect:
             redirect_to = redirect[key_path]
