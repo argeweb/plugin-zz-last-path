@@ -120,7 +120,7 @@ class ZzLastPath(Controller):
         return scaffold.add(self)
 
     @route
-    @route_menu(list_name=u'backend', text=u'頁面路徑驗証設定', sort=9952, group=u'系統設定', need_hr=True)
+    @route_menu(list_name=u'backend', text=u'頁面驗証設定', sort=9961, group=u'系統設定', need_hr=True)
     def admin_config(self):
         record = self.meta.Model.find_by_name('zz_last_path_config')
         if record is None:
