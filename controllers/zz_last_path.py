@@ -17,7 +17,22 @@ from argeweb.components.csrf import CSRF, csrf_protect
 def check_authorizations(controller, path, config):
     redirect_to = ''
     can_render = False
-    check = config.authorization_check
+    if config is None:
+        check = '''
+        {
+            "anonymous": ["*"],
+            "user": [],
+            "member": []
+        }        
+        '''
+        redirect = '''
+        {
+            "user": "/login.html"
+        }
+        '''
+    else:
+        check = config.authorization_check
+        redirect = config.authorization_redirect
     key_all = ''
     key_path = ''
     if check != '':
