@@ -60,69 +60,33 @@ def check_authorizations(controller, path, config):
 
 
 class ZzLastPath(Controller):
-    class Meta:
-        components = (scaffold.Scaffolding, Pagination, Search, CSRF)
-
     @route_with('/')
-    @route_with('/index.html')
-    @add_authorizations(auth.check_user)
-    def index(self):
-        # 取消樣版系統的快取
-        self.meta.view.cache = False
-        self.context['information'] = self.host_information
-        zz_config = self.meta.Model.find_by_name('zz_last_path_config')
-        try:
-            can_render, redirect_to = check_authorizations(self, '/index.html', zz_config)
-        except ImportError:
-            can_render = True
-            redirect_to = ''
-        if can_render:
-            # 先從 Datastore 讀取樣版, 再從 實體檔案 讀取樣版 (template, themes 相關目錄)
-            self.meta.view.template_name = [u'assets:/themes/%s/index.html' % self.theme, u'/index.html']
-            if self.theme == 'default':
-                # 若有語系參數的話 ( hl )
-                index_path = u'%s.html' % self.params.get_string('hl', u'index').lower().replace('-', '')
-                self.meta.view.template_name = [u'assets:/themes/%s/%s' % (self.theme, index_path), index_path]
-        else:
-            if redirect_to is not '':
-                return self.redirect(redirect_to)
-            return self.abort(403)
-
-    @route_with(template='/<(zhtw|zhcn|enus|zh_tw|zh_cn|en_us)>/<:(.*)>.html')
-    @add_authorizations(auth.check_user)
-    def zz_full_path_with_lang(self, lang, path):
-        """
-        對應到全部的 .html 路徑
-        """
-        # 取消樣版系統的快取
-        # TODO 語系的支援
-        self.meta.view.cache = False
-
-        self.context['information'] = self.host_information
-        # 先從 Datastore 讀取樣版, 再從 實體檔案 讀取樣版 (template, themes 相關目錄)
-        self.meta.view.template_name = [
-            u'assets:/themes/%s/%s.html' % (self.theme, path), u'/' + path + u'.html']
-
     @route_with(template='/<:(.*)>.html')
     @add_authorizations(auth.check_user)
-    def zz_full_path(self, path):
+    def zz_full_path(self, path=u'index'):
         """
         對應到全部的 .html 路徑
         """
         path = '/%s.html' % path
-        # 取消樣版系統的快取
-        self.meta.view.cache = False
+        path_ds = u'assets:/themes/%s%s' % (self.theme, path)
         self.context['information'] = self.host_information
         zz_config = self.meta.Model.find_by_name('zz_last_path_config')
-        try:
-            can_render, redirect_to = check_authorizations(self, path, zz_config)
-        except ImportError:
-            can_render = True
-            redirect_to = ''
+        # 樣版系統的快取
+        self.meta.view.cache = zz_config.view_cache
+        can_render = True
+        redirect_to = ''
+        if zz_config.use_authorization_check:
+            try:
+                can_render, redirect_to = check_authorizations(self, path, zz_config)
+            except ImportError:
+                can_render = False
         if can_render:
-            # 先從 Datastore 讀取樣版, 再從 實體檔案 讀取樣版 (template, themes 相關目錄)
-            self.meta.view.template_name = [
-                u'assets:/themes/%s%s' % (self.theme, path), path]
+            if zz_config.use_real_template_first:
+                # 先從 實體檔案 讀取樣版, 再從 Datastore 讀取樣版
+                self.meta.view.template_name = [path, path_ds]
+            else:
+                # 先從 Datastore 讀取樣版, 再從 實體檔案 讀取樣版
+                self.meta.view.template_name = [path_ds, path]
         else:
             if redirect_to is not '':
                 return self.redirect(redirect_to)
@@ -135,7 +99,7 @@ class ZzLastPath(Controller):
         return scaffold.add(self)
 
     @route
-    @route_menu(list_name=u'backend', text=u'頁面驗証設定', sort=9961, group=u'系統設定', need_hr=True)
+    @route_menu(list_name=u'backend', text=u'路徑映射設定', sort=9961, group=u'系統設定', need_hr=True)
     def admin_config(self):
         record = self.meta.Model.find_by_name('zz_last_path_config')
         if record is None:
@@ -165,5 +129,5 @@ class ZzLastPath(Controller):
                 record.put()
             return 'done'
         except ImportError:
-            self.logging.error(u'需要 "付款中間層"')
+            self.logging.error(u'建設 zz_last_path 設定時，發生錯誤"')
             return 'ImportError'
