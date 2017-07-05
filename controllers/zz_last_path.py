@@ -68,11 +68,12 @@ class ZzLastPath(Controller):
         對應到全部的 .html 路徑
         """
         path = '/%s.html' % path
-        path_ds = u'assets:/themes/%s%s' % (self.theme, path)
+        path_ds = 'assets:/themes/%s%s' % (self.theme, path)
         self.context['information'] = self.host_information
         zz_config = self.meta.Model.find_by_name('zz_last_path_config')
         # 樣版系統的快取
         self.meta.view.cache = zz_config.view_cache
+        path_app = '/application/%s/templates%s' % (self.theme, path)
         can_render = True
         redirect_to = ''
         if zz_config.use_authorization_check:
@@ -83,10 +84,10 @@ class ZzLastPath(Controller):
         if can_render:
             if zz_config.use_real_template_first:
                 # 先從 實體檔案 讀取樣版, 再從 Datastore 讀取樣版
-                self.meta.view.template_name = [path, path_ds]
+                self.meta.view.template_name = [path, path_app, path_ds]
             else:
                 # 先從 Datastore 讀取樣版, 再從 實體檔案 讀取樣版
-                self.meta.view.template_name = [path_ds, path]
+                self.meta.view.template_name = [path_ds, path, path_app]
         else:
             if redirect_to is not '':
                 return self.redirect(redirect_to)
