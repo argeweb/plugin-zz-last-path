@@ -9,7 +9,7 @@
 
 plugins_helper = {
     'title': u'Html 路徑映射',
-    'desc': u"根據 routing 的規則，此模組的路徑將會在最後被載入",
+    'desc': u"根據 routing 的規則，此路徑將會在最後被載入",
     'controllers': {
         'zz_last_path': {
             'group': u'路徑映射',
