@@ -7,10 +7,10 @@
 # Date: 2017/5/27.
 
 from argeweb import Fields
-from argeweb import BasicModel
+from argeweb import BasicConfigModel
 
 
-class ZzLastPathModel(BasicModel):
+class ZzLastPathModel(BasicConfigModel):
     name = Fields.HiddenProperty(verbose_name=u'識別名稱', default=u'zz_last_path_config')
     use_authorization_check = Fields.BooleanProperty(verbose_name=u'使用驗証檢查', default=True)
     authorization_check = Fields.CodeJSONProperty(verbose_name=u'驗証檢查', default=u'''

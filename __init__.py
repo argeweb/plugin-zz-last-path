@@ -18,6 +18,5 @@ plugins_helper = {
                 {'action': 'plugins_check', 'name': u'啟用停用模組'},
             ]
         },
-    },
-    'install_uri': 'zz_last_path:zz_last_path:after_install'
+    }
 }

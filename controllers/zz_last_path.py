@@ -6,7 +6,7 @@
 # Web: http://www.yooliang.com/
 # Date: 2017/5/27.
 
-from datetime import date
+from datetime import date, timedelta
 from argeweb import auth, add_authorizations
 from argeweb import Controller, scaffold, route_menu, route_with, route
 from argeweb.components.pagination import Pagination
@@ -63,6 +63,10 @@ def check_authorizations(controller, path, check=None, redirect=None):
             redirect_to = redirect[key_path]
         if key_all is not '' and key_all in redirect:
             redirect_to = redirect[key_all]
+    if redirect_to.find('?') > 0:
+        redirect_to = redirect_to + '&from=' + path
+    else:
+        redirect_to = redirect_to + '?from=' + path
     return can_render, redirect_to
 
 
@@ -70,15 +74,28 @@ class ZzLastPath(Controller):
     class Meta:
         components = (scaffold.Scaffolding, Pagination, Search, Config)
 
+    @route_with('/test')
+    def test(self):
+        demo = {"CheckCode": "879D8063294B0B1CAE969417C50EBE0929FFA07468FDC30380B3F819ABBA73E0",
+                "MerchantID": "3653940",
+                "MerchantOrderNo": "20171019_6753", "InvoiceNumber": "FM00000101", "TotalAmt": 360,
+                "InvoiceTransNo": "17102008374131677", "RandomNum": "3965", "CreateTime": "2017-10-20 08:37:41",
+                "BarCode": "10610FM000001013965",
+                "QRcodeL": "FM000001011061020396500000157000001680000000034960999Y78Q\/scA0d5p\/F+kxxQ9lA==:**********:1:1:0:",
+                "QRcodeR": "**test (\u6e2c\u8a66\u7522\u54c1:1:300"}
+        s = []
+        for key, val in demo.items():
+            s.append('return_' + self.util.underscore(key))
+        return self.json(s)
+
     @route_with('/')
-    @route_with(template='/<:(.*)>.html')
-    @add_authorizations(auth.check_user)
+    @route_with(template='/<path:(.*)>.html')
     def zz_full_path(self, path=u'index'):
         """
         對應到全部的 .html 路徑
         """
         try:
-            if self.host_information.space_expiration_date < date.today():
+            if self.host_information.space_expiration_date < date.today() + timedelta(days=1):
                 return self.abort(404)
         except:
             return self.abort(404)
@@ -115,8 +132,8 @@ class ZzLastPath(Controller):
     @route
     @route_menu(list_name=u'super_user', text=u'路徑映射設定', sort=3, group=u'系統設定')
     def admin_config(self):
-        record = self.meta.Model.get_or_create_by_name('zz_last_path_config')
-        return scaffold.edit(self, record.key)
+        config_record = self.meta.Model.get_config()
+        return scaffold.edit(self, config_record.key)
 
     def admin_edit(self, key):
         self.context['item'] = self.params.get_ndb_record(key)
@@ -131,9 +148,5 @@ class ZzLastPath(Controller):
 
     @route
     def taskqueue_after_install(self):
-        try:
-            record = self.meta.Model.get_or_create_by_name('zz_last_path_config')
-            return 'done'
-        except ImportError:
-            self.logging.error(u'建立 zz_last_path 設定時，發生錯誤"')
-            return 'ImportError'
+        config_record = self.meta.Model.get_config()
+        return 'done'
